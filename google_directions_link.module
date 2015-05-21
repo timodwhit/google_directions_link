@@ -1,0 +1,95 @@
+<?php
+/**
+ * @file
+ * Module file for geofield
+ */
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function google_directions_link_field_formatter_info() {
+  return array(
+    'google_directions_link_link' => array(
+      'label' => t('Google Directions Link'),
+      'field types' => array('geofield'),
+      'settings' => array(
+        'text' => 'Get Directions',
+        'user_current' => TRUE,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function google_directions_link_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $element['text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Link Text'),
+    '#default_value' => $settings['text'],
+    '#required' => TRUE,
+  );
+  $element['user_current'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use users current location in link.'),
+    '#default_value' => $settings['user_current'],
+  );
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function google_directions_link_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $summary = '';
+
+  if ($display['type'] == 'google_directions_link_link') {
+    $user_current = ($settings['user_current']) ? 'current user\'s' : 'no default';
+    $summary = t('Google Map Directions Link using @current location. Text: @text.',
+      array(
+        '@text' => $settings['text'],
+        '@current' => $user_current,
+      )
+    );
+  }
+  return $summary;
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function google_directions_link_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+
+  switch ($display['type']) {
+    case 'google_directions_link_link':
+      foreach ($items as $delta => $item) {
+        $location = '';
+        if (!empty($item['lat']) && !empty($item['lon'])) {
+          $location = $item['lat'] . ',' . $item['lon'];
+        }
+        $user_current = $settings['user_current'] ? 'Current+Location/' : '';
+        $element[$delta] = array(
+          '#theme' => 'link',
+          '#text' => $settings['text'],
+          '#path' => 'https://www.google.com/maps/dir/' . $user_current . $location,
+          '#options' => array(
+            'attributes' => array(),
+            //REQUIRED:
+            'html' => FALSE,
+          ),
+        );
+      }
+      break;
+  }
+
+  return $element;
+}

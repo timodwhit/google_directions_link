@@ -1,0 +1,6 @@
+name = Google Directions Link
+description = A field formatter to turna  geofield into a google directions link.
+core = 7.x
+package = "Fields"
+dependencies[] = geofield
+files[] = google_directions_link.test

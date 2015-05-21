@@ -1,0 +1,74 @@
+<?php
+
+/**
+ * @file
+ * Tests for google_directions_link.module.
+ */
+
+class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name'  => 'Google Directions Link',
+      'description'  => "Test the google directions link formatter of geofield.",
+      'group' => 'Geofield'
+    );
+  }
+
+  public function setUp() {
+    parent::setUp(array('google_directions_link'));
+    $this->privilegedUser = $this->drupalCreateUser(array(
+      'create article content',
+      'administer content types'
+    ));
+    $this->drupalLogin($this->privilegedUser);
+  }
+
+  public function testGoogleDirectionsLinkFormatter() {
+    // Test lat/lon widget
+    $this->field_name = drupal_strtolower($this->randomName());
+    $this->field = array('field_name' => $this->field_name, 'type' => 'geofield');
+    field_create_field($this->field);
+    $link_title = $this->randomName();
+    $this->instance = array(
+      'field_name' => $this->field_name,
+      'entity_type' => 'node',
+      'bundle' => 'article',
+      'label' => $this->randomName() . '_label',
+      'settings' => array(
+      ),
+      'widget' => array(
+        'type' => 'geofield_wkt',
+      ),
+      'display' => array(
+        'full' => array(
+          'type' => 'google_directions_link',
+          'settings' => array(
+            'text' => $link_title,
+            'user_current' => FALSE,
+          ),
+        ),
+      ),
+    );
+    field_create_instance($this->instance);
+    // Display creation form.
+    $langcode = LANGUAGE_NONE;
+    $this->drupalGet('node/add/article');
+
+    // Submit with some value.
+    include_once(drupal_get_path('module', 'geofield') . '/includes/GeoGenerator.php');
+    $generator = new GeoGenerator();
+    $wkt = $generator->wkt_generate();
+    geophp_load();
+    $geometry = geoPHP::load($wkt, 'wkt');
+
+    $edit = array(
+      "{$this->field_name}[$langcode][0][geom]" => $geometry->out('wkt'),
+    );
+    $this->drupalPost(NULL, $edit, t('Save'));
+    preg_match('|test-entity/manage/(\d+)/edit|', $this->url, $match);
+    $id = $match[1];
+
+    // GeofieldBaseTestCase::_testWKTFormatter($id, $geometry, 'wkt');
+  }
+}
