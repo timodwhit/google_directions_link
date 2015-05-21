@@ -1,10 +1,14 @@
 <?php
-
 /**
  * @file
  * Tests for google_directions_link.module.
  */
 
+/**
+ * Functionality tests of the google_directions_link module.
+ *
+ * @ingroup google_directions_link
+ */
 class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
 
   /**
@@ -32,7 +36,7 @@ class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
    * Tests the formatting of the geofield as a google directions link.
    */
   public function testGoogleDirectionsLinkFormatter() {
-    // Setup a field and instance
+    // Setup a field and instance.
     $this->field_name = 'field_' . drupal_strtolower($this->randomName());
     $this->field = array('field_name' => $this->field_name, 'type' => 'geofield');
     field_create_field($this->field);
@@ -52,7 +56,7 @@ class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
           'settings' => array(
             'text' => $field_text,
             'user_current' => FALSE,
-          )
+          ),
         ),
       ),
     );
@@ -82,10 +86,10 @@ class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
         'attributes' => array(
           'alt' => $field_text,
           'class' => array('google-directions-link'),
-        )
+        ),
       )
     );
-    $this->assertRaw($link,'Link is displaying' );
+    $this->assertRaw($link, 'Link is displaying');
   }
 
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Module file for geofield
+ * Module file for geofield.
  */
 
 /**
@@ -85,7 +85,6 @@ function google_directions_link_field_formatter_view($entity_type, $entity, $fie
               'alt' => $settings['text'],
               'class' => array('google-directions-link'),
             ),
-            //REQUIRED:
             'html' => FALSE,
           ),
         );
