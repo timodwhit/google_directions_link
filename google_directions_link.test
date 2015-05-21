@@ -7,14 +7,20 @@
 
 class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getInfo() {
     return array(
       'name'  => 'Google Directions Link',
       'description'  => "Test the google directions link formatter of geofield.",
-      'group' => 'Geofield'
+      'group' => 'Geofield',
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function setUp() {
     parent::setUp(array('google_directions_link'));
     // Create and log in our privileged user.
@@ -22,6 +28,9 @@ class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
     $this->drupalLogin($this->privileged_user);
   }
 
+  /**
+   * Tests the formatting of the geofield as a google directions link.
+   */
   public function testGoogleDirectionsLinkFormatter() {
     // Setup a field and instance
     $this->field_name = 'field_' . drupal_strtolower($this->randomName());
@@ -33,8 +42,7 @@ class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
       'entity_type' => 'node',
       'bundle' => 'article',
       'label' => $this->field_name . '_label',
-      'settings' => array(
-      ),
+      'settings' => array(),
       'widget' => array(
         'type' => 'geofield_latlon',
       ),
@@ -53,7 +61,7 @@ class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
     $edit['title'] = $this->randomName(8);
     // Display creation form.
     $langcode = LANGUAGE_NONE;
-    include_once(drupal_get_path('module', 'geofield') . '/includes/GeoGenerator.php');
+    include_once drupal_get_path('module', 'geofield') . '/includes/GeoGenerator.php';
     $generator = new GeoGenerator();
     $point = $generator->random_point();
     geophp_load();
@@ -79,4 +87,5 @@ class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
     );
     $this->assertRaw($link,'Link is displaying' );
   }
+
 }
