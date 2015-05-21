@@ -68,7 +68,6 @@ function google_directions_link_field_formatter_settings_summary($field, $instan
 function google_directions_link_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   $settings = $display['settings'];
-
   switch ($display['type']) {
     case 'google_directions_link_link':
       foreach ($items as $delta => $item) {
@@ -82,7 +81,10 @@ function google_directions_link_field_formatter_view($entity_type, $entity, $fie
           '#text' => $settings['text'],
           '#path' => 'https://www.google.com/maps/dir/' . $user_current . $location,
           '#options' => array(
-            'attributes' => array(),
+            'attributes' => array(
+              'alt' => $settings['text'],
+              'class' => array('google-directions-link'),
+            ),
             //REQUIRED:
             'html' => FALSE,
           ),
@@ -90,6 +92,5 @@ function google_directions_link_field_formatter_view($entity_type, $entity, $fie
       }
       break;
   }
-
   return $element;
 }

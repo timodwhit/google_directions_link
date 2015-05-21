@@ -17,58 +17,66 @@ class GoogleDirectionsLinkTestCase extends DrupalWebTestCase {
 
   public function setUp() {
     parent::setUp(array('google_directions_link'));
-    $this->privilegedUser = $this->drupalCreateUser(array(
-      'create article content',
-      'administer content types'
-    ));
-    $this->drupalLogin($this->privilegedUser);
+    // Create and log in our privileged user.
+    $this->privileged_user = $this->drupalCreateUser(array('create article content'));
+    $this->drupalLogin($this->privileged_user);
   }
 
   public function testGoogleDirectionsLinkFormatter() {
-    // Test lat/lon widget
-    $this->field_name = drupal_strtolower($this->randomName());
+    // Setup a field and instance
+    $this->field_name = 'field_' . drupal_strtolower($this->randomName());
     $this->field = array('field_name' => $this->field_name, 'type' => 'geofield');
     field_create_field($this->field);
-    $link_title = $this->randomName();
+    $field_text = $this->randomName(8);
     $this->instance = array(
       'field_name' => $this->field_name,
       'entity_type' => 'node',
       'bundle' => 'article',
-      'label' => $this->randomName() . '_label',
+      'label' => $this->field_name . '_label',
       'settings' => array(
       ),
       'widget' => array(
-        'type' => 'geofield_wkt',
+        'type' => 'geofield_latlon',
       ),
       'display' => array(
-        'full' => array(
-          'type' => 'google_directions_link',
+        'default' => array(
+          'type' => 'google_directions_link_link',
           'settings' => array(
-            'text' => $link_title,
+            'text' => $field_text,
             'user_current' => FALSE,
-          ),
+          )
         ),
       ),
     );
     field_create_instance($this->instance);
+
+    $edit['title'] = $this->randomName(8);
     // Display creation form.
     $langcode = LANGUAGE_NONE;
-    $this->drupalGet('node/add/article');
-
-    // Submit with some value.
     include_once(drupal_get_path('module', 'geofield') . '/includes/GeoGenerator.php');
     $generator = new GeoGenerator();
-    $wkt = $generator->wkt_generate();
+    $point = $generator->random_point();
     geophp_load();
-    $geometry = geoPHP::load($wkt, 'wkt');
-
-    $edit = array(
-      "{$this->field_name}[$langcode][0][geom]" => $geometry->out('wkt'),
+    $geometry = new Point($point[0], $point[1]);
+    $edit += array(
+      "{$this->field_name}[$langcode][0][geom][lat]" => $geometry->getY(),
+      "{$this->field_name}[$langcode][0][geom][lon]" => $geometry->getX(),
     );
-    $this->drupalPost(NULL, $edit, t('Save'));
-    preg_match('|test-entity/manage/(\d+)/edit|', $this->url, $match);
-    $id = $match[1];
 
-    // GeofieldBaseTestCase::_testWKTFormatter($id, $geometry, 'wkt');
+    $latlon = number_format($geometry->getY(), 12) . ',' . number_format($geometry->getX(), 12);
+
+    $this->drupalPost('node/add/article', $edit, t('Save'));
+    // preg_match('|test-entity/manage/(\d+)/edit|', $this->url, $match);
+    $link = l(
+      $field_text,
+      'https://www.google.com/maps/dir/' . $latlon,
+      array(
+        'attributes' => array(
+          'alt' => $field_text,
+          'class' => array('google-directions-link'),
+        )
+      )
+    );
+    $this->assertRaw($link,'Link is displaying' );
   }
 }
